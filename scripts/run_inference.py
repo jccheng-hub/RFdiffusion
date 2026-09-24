@@ -34,8 +34,9 @@ def make_deterministic(seed=0):
     np.random.seed(seed)
     random.seed(seed)
 
-
-@hydra.main(version_base=None, config_path="../config/inference", config_name="base")
+### Modified by John C. Cheng to support PDchain integration ###
+pixiroot = os.environ.get('PIXI_PROJECT_ROOT')
+@hydra.main(version_base=None, config_path=f"{pixiroot}/box/programs/RFdiffusion/config/inference", config_name="base")
 def main(conf: HydraConfig) -> None:
     log = logging.getLogger(__name__)
     if conf.inference.deterministic:
