@@ -152,7 +152,6 @@ class Sampler:
         ### Modified by John C. Cheng to support PDchain integration ###
         if self.inf_conf.input_pdb is None:
             pixiroot = os.environ.get('PIXI_PROJECT_ROOT')
-            model_directory = f'{pixiroot}/models'
             self.inf_conf.input_pdb=f'{pixiroot}/box/programs/RFdiffusion/examples/input_pdbs/1qys.pdb'
         self.target_feats = iu.process_target(self.inf_conf.input_pdb, parse_hetatom=True, center=False)
         self.chain_idx = None
