@@ -147,10 +147,10 @@ class Sampler:
 
         self.allatom = ComputeAllAtomCoords().to(self.device)
         
+        ### Modified by John C. Cheng to support PDchain integration ###
         if self.inf_conf.input_pdb is None:
-            # set default pdb
-            script_dir=os.path.dirname(os.path.realpath(__file__))
-            self.inf_conf.input_pdb=os.path.join(script_dir, '../../examples/input_pdbs/1qys.pdb')
+            pixiroot = os.environ.get('PIXI_PROJECT_ROOT')
+            self.inf_conf.input_pdb=f'{pixiroot}/box/programs/RFdiffusion/examples/input_pdbs/1qys.pdb'
         self.target_feats = iu.process_target(self.inf_conf.input_pdb, parse_hetatom=True, center=False)
         self.chain_idx = None
 
