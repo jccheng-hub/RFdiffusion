@@ -60,10 +60,12 @@ class Sampler:
         ### Select Appropriate Model ###
         ################################
 
+        ### Modified by John C. Cheng for PDchain integration ###
         if conf.inference.model_directory_path is not None:
             model_directory = conf.inference.model_directory_path
         else:
-            model_directory = f"{SCRIPT_DIR}/../../models"
+            pixiroot = os.environ.get('PIXI_PROJECT_ROOT')
+            model_directory = f"{pixiroot}/models"
 
         print(f"Reading models from {model_directory}")
 
