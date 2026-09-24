@@ -41,14 +41,11 @@ def main(conf: HydraConfig) -> None:
     if conf.inference.deterministic:
         make_deterministic()
 
-    # Check for available GPU and print result of check
-    if torch.cuda.is_available():
-        device_name = torch.cuda.get_device_name(torch.cuda.current_device())
-        log.info(f"Found GPU with device_name {device_name}. Will run RFdiffusion on {device_name}")
-    else:
-        log.info("////////////////////////////////////////////////")
-        log.info("///// NO GPU DETECTED! Falling back to CPU /////")
-        log.info("////////////////////////////////////////////////")
+    # Only allow cpu to run
+    device_name = "cpu"
+    log.info("////////////////////////////////////////////////")
+    log.info("///// NO GPU DETECTED! Falling back to CPU /////")
+    log.info("////////////////////////////////////////////////")
 
     # Initialize sampler and target/contig.
     sampler = iu.sampler_selector(conf)
@@ -143,49 +140,49 @@ def main(conf: HydraConfig) -> None:
             bfacts=bfacts,
         )
 
-        # run metadata
-        trb = dict(
-            config=OmegaConf.to_container(sampler._conf, resolve=True),
-            plddt=plddt_stack.cpu().numpy(),
-            device=torch.cuda.get_device_name(torch.cuda.current_device())
-            if torch.cuda.is_available()
-            else "CPU",
-            time=time.time() - start_time,
-        )
-        if hasattr(sampler, "contig_map"):
-            for key, value in sampler.contig_map.get_mappings().items():
-                trb[key] = value
-        with open(f"{out_prefix}.trb", "wb") as f_out:
-            pickle.dump(trb, f_out)
+        # # run metadata
+        # trb = dict(
+        #     config=OmegaConf.to_container(sampler._conf, resolve=True),
+        #     plddt=plddt_stack.cpu().numpy(),
+        #     device=torch.cuda.get_device_name(torch.cuda.current_device())
+        #     if torch.cuda.is_available()
+        #     else "CPU",
+        #     time=time.time() - start_time,
+        # )
+        # if hasattr(sampler, "contig_map"):
+        #     for key, value in sampler.contig_map.get_mappings().items():
+        #         trb[key] = value
+        # with open(f"{out_prefix}.trb", "wb") as f_out:
+        #     pickle.dump(trb, f_out)
 
-        if sampler.inf_conf.write_trajectory:
-            # trajectory pdbs
-            traj_prefix = (
-                os.path.dirname(out_prefix) + "/traj/" + os.path.basename(out_prefix)
-            )
-            os.makedirs(os.path.dirname(traj_prefix), exist_ok=True)
+        # if sampler.inf_conf.write_trajectory:
+        #     # trajectory pdbs
+        #     traj_prefix = (
+        #         os.path.dirname(out_prefix) + "/traj/" + os.path.basename(out_prefix)
+        #     )
+        #     os.makedirs(os.path.dirname(traj_prefix), exist_ok=True)
 
-            out = f"{traj_prefix}_Xt-1_traj.pdb"
-            writepdb_multi(
-                out,
-                denoised_xyz_stack,
-                bfacts,
-                final_seq.squeeze(),
-                use_hydrogens=False,
-                backbone_only=False,
-                chain_ids=sampler.chain_idx,
-            )
+        #     out = f"{traj_prefix}_Xt-1_traj.pdb"
+        #     writepdb_multi(
+        #         out,
+        #         denoised_xyz_stack,
+        #         bfacts,
+        #         final_seq.squeeze(),
+        #         use_hydrogens=False,
+        #         backbone_only=False,
+        #         chain_ids=sampler.chain_idx,
+        #     )
 
-            out = f"{traj_prefix}_pX0_traj.pdb"
-            writepdb_multi(
-                out,
-                px0_xyz_stack,
-                bfacts,
-                final_seq.squeeze(),
-                use_hydrogens=False,
-                backbone_only=False,
-                chain_ids=sampler.chain_idx,
-            )
+        #     out = f"{traj_prefix}_pX0_traj.pdb"
+        #     writepdb_multi(
+        #         out,
+        #         px0_xyz_stack,
+        #         bfacts,
+        #         final_seq.squeeze(),
+        #         use_hydrogens=False,
+        #         backbone_only=False,
+        #         chain_ids=sampler.chain_idx,
+        #     )
 
         log.info(f"Finished design in {(time.time()-start_time)/60:.2f} minutes")
 
